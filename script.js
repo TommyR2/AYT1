@@ -192,29 +192,29 @@ function shapeChanged(next) {
   return !(sameMen && sameWomen);
 }
 
-// // Polling every 5s — updates in place (no page reload)
-// function fetchAndUpdate() {
-//   fetch("data.json?nocache=" + Date.now())
-//     .then(r => r.json())
-//     .then(data => {
-//       if (!app.initialized) {
-//         initOnce(data);
-//       } else if (shapeChanged(data)) {
-//         // rare: structure changed → rebuild SVG once
-//         d3.select("#heatmap").select("svg").remove();
-//         d3.select("#legend").select("svg").remove();
-//         d3.selectAll(".tooltip").remove();
-//         app.initialized = false;
-//         initOnce(data);
-//       } else {
-//         patchValues(data); // cheap in-place update
-//       }
-//     })
-//     .catch(() => { /* ignore transient fetch errors */ });
-// }
+// Polling every 5s — updates in place (no page reload)
+function fetchAndUpdate() {
+  fetch("data.json?nocache=" + Date.now())
+    .then(r => r.json())
+    .then(data => {
+      if (!app.initialized) {
+        initOnce(data);
+      } else if (shapeChanged(data)) {
+        // rare: structure changed → rebuild SVG once
+        d3.select("#heatmap").select("svg").remove();
+        d3.select("#legend").select("svg").remove();
+        d3.selectAll(".tooltip").remove();
+        app.initialized = false;
+        initOnce(data);
+      } else {
+        patchValues(data); // cheap in-place update
+      }
+    })
+    .catch(() => { /* ignore transient fetch errors */ });
+}
 
-// fetchAndUpdate();
-// setInterval(fetchAndUpdate, 500); // 5 seconds
+fetchAndUpdate();
+setInterval(fetchAndUpdate, 500); // 5 seconds
 
 // On resize, rebuild once to reflow labels & cell sizes (does NOT affect scroll)
 let resizeTimer;
