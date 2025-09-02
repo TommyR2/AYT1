@@ -1,0 +1,72 @@
+body {
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #fafafa;
+  color: #333;
+}
+
+header {
+  background: #222;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+main {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#heatmap svg {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  border-radius: 6px;
+  background: white;
+}
+
+.axis text {
+  font-size: 13px;
+  fill: #333;
+}
+
+.cell {
+  stroke: #ddd;
+  stroke-width: 1px;
+  transition: stroke 0.2s;
+}
+
+.cell:hover {
+  stroke: #000;
+  stroke-width: 2px;
+}
+
+.tooltip {
+  position: absolute;
+  background: white;
+  border: 1px solid #999;
+  padding: 6px 10px;
+  font-size: 13px;
+  border-radius: 4px;
+  pointer-events: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+#legend {
+  margin-top: 25px;
+}
+
+#heatmap { width: 100%; }
+.axis { user-select: none; }
+
+/* Thin separators between cells */
+.heatmap .cell {
+  stroke: rgba(0,0,0,.18);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  shape-rendering: crispEdges;
+}
+@media (min-resolution: 2dppx) { /* retina tweak */
+  .heatmap .cell { stroke-width: 2; }
+}
