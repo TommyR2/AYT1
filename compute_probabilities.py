@@ -273,7 +273,7 @@ def compute_probabilities(ceremony_dir: str, truth_dir: str, out_path: str, *, a
     if total > 0:
         for i in range(n):
             for j in range(n):
-                probs[i][j] = counts[i][j] / total
+                probs[j][i] = counts[i][j] / total
     else:
         print("[ERROR] No consistent matchings exist; writing zeros.", file=sys.stderr)
     out = {"men": problem.men, "women": problem.women, "probabilities": probs}
