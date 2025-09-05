@@ -1,16 +1,38 @@
 body {
-  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
-  padding: 0;
   background: #fafafa;
   color: #333;
 }
 
 header {
   background: #222;
-  color: white;
-  padding: 20px;
-  text-align: center;
+  color: #fff;
+  padding: 16px 20px;
+}
+header h1 {
+  margin: 0 0 10px 0;
+  font-weight: 600;
+}
+
+.week-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.week-buttons .btn {
+  background: #fff;
+  color: #222;
+  border: 1px solid #666;
+  padding: 6px 10px;
+  border-radius: 18px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.week-buttons .btn.active {
+  background: #3ccf3c;
+  border-color: #1a7a1a;
+  color: #000;
 }
 
 main {
@@ -20,53 +42,33 @@ main {
   align-items: center;
 }
 
+#heatmap { width: 100%; }
 #heatmap svg {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  background: #fff;
   border-radius: 6px;
-  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
 }
 
-.axis text {
-  font-size: 13px;
-  fill: #333;
-}
+.axis text { fill: #333; }
 
 .cell {
-  stroke: #ddd;
+  stroke: rgba(0,0,0,.18);
   stroke-width: 1px;
-  transition: stroke 0.2s;
+  vector-effect: non-scaling-stroke;
+  shape-rendering: crispEdges;
+  transition: stroke .2s;
 }
-
-.cell:hover {
-  stroke: #000;
-  stroke-width: 2px;
-}
+.cell:hover { stroke: #000; stroke-width: 2; }
 
 .tooltip {
   position: absolute;
-  background: white;
+  background: #fff;
   border: 1px solid #999;
   padding: 6px 10px;
   font-size: 13px;
   border-radius: 4px;
   pointer-events: none;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 6px rgba(0,0,0,.2);
 }
 
-#legend {
-  margin-top: 25px;
-}
-
-#heatmap { width: 100%; }
-.axis { user-select: none; }
-
-/* Thin separators between cells */
-.heatmap .cell {
-  stroke: rgba(0,0,0,.18);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-  shape-rendering: crispEdges;
-}
-@media (min-resolution: 2dppx) { /* retina tweak */
-  .heatmap .cell { stroke-width: 2; }
-}
+#legend { margin-top: 20px; }
