@@ -1,17 +1,15 @@
 {
-  "men": ["Zak", "Devin", "Tyler", "Connor", "Mike", "Alec", "Chuck", "Nelson", "Hunter", "Austin"],
-  "women": ["Rashida", "Kiki", "Cheyenne", "Stacey", "Hannah", "Amanda", "Kayla", "Melanie", "Britney", "Chelsea"],
-  "matchups": [
-    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-    [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+  "matches": [
+    { "man": "Zak",    "woman": "Kayla" },
+    { "man": "Devin",  "woman": "Melanie" },
+    { "man": "Tyler",  "woman": "Rashida" },
+    { "man": "Connor", "woman": "Chelsea" },
+    { "man": "Mike",   "woman": "Amanda" },
+    { "man": "Alec",   "woman": "Stacey" },
+    { "man": "Chuck",  "woman": "Hannah" },
+    { "man": "Nelson", "woman": "Cheyenne" },
+    { "man": "Hunter", "woman": "Britney" },
+    { "man": "Austin", "woman": "Kiki" }
   ],
-  "result" : 2
+  "result": 2
 }
