@@ -8,6 +8,10 @@ const elHeatmap = document.getElementById("heatmap");
 const elLegend  = document.getElementById("legend");
 const elWeekNav = document.getElementById("weekButtons");
 
+const elCeremonyTitle = document.getElementById("ceremonyTitle");
+const elCeremonyMeta  = document.getElementById("ceremonyMeta");
+const elCeremonyBody  = document.querySelector("#ceremonyTable tbody");
+
 // App state
 const app = {
   initialized: false,
@@ -25,6 +29,116 @@ const app = {
 };
 
 // ---------- utils ----------
+const ceremonyCache = new Map(); // week -> normalized { pairs:[{man,woman}], meta:{} }
+
+function normalizePairs(raw, menList, womenList) {
+  if (!raw) return [];
+
+  // Case 1: Array of arrays: [["Man","Woman"], ...]
+  if (Array.isArray(raw) && raw.length && Array.isArray(raw[0])) {
+    return raw.map(([man, woman]) => ({ man: String(man), woman: String(woman) }));
+  }
+
+  // Case 2: Array of objects: [{man:"", woman:""}] (allow common key aliases)
+  if (Array.isArray(raw) && raw.length && typeof raw[0] === "object") {
+    const manKeys = ["man", "male", "guy"];
+    const womanKeys = ["woman", "female", "girl"];
+    return raw.map(o => {
+      const man = manKeys.map(k => o[k]).find(v => v != null);
+      const wom = womanKeys.map(k => o[k]).find(v => v != null);
+      return (man && wom) ? { man: String(man), woman: String(wom) } : null;
+    }).filter(Boolean);
+  }
+
+  // Case 3: Object map: { "Man": "Woman", ... }
+  if (raw && typeof raw === "object") {
+    return Object.entries(raw).map(([man, woman]) => ({ man: String(man), woman: String(woman) }));
+  }
+
+  return [];
+}
+
+function extractCeremonyFromWeeklyData(weeklyData) {
+  if (!weeklyData || typeof weeklyData !== "object") return { pairs: [], meta: {} };
+  const c = weeklyData.ceremony || {};
+  const pairsRaw =
+    c.pairs ?? c.matches ?? c.matchups ??
+    weeklyData.matchups ?? weeklyData.matches ?? null;
+
+  const pairs = normalizePairs(pairsRaw, weeklyData.men, weeklyData.women);
+  const meta = {
+    beams: c.beams ?? weeklyData.beams,
+    blackout: c.blackout ?? weeklyData.blackout,
+    week: weeklyData.week
+  };
+  return { pairs, meta };
+}
+
+async function fetchCeremonyForWeek(week, weeklyData) {
+  // 1) Try embedded in weekly data
+  const embedded = extractCeremonyFromWeeklyData(weeklyData);
+  if (embedded.pairs.length) return embedded;
+
+  // 2) Cache
+  if (ceremonyCache.has(week)) return ceremonyCache.get(week);
+
+  // 3) Try separate file: ceremony_data/week_<w>.json
+  const extra = await fetchJSON(`ceremony_data/week_${week}.json`);
+  if (extra) {
+    const c = extra.ceremony || extra; // allow nested or top-level
+    const pairsRaw = c.pairs ?? c.matches ?? c.matchups ?? c.couples ?? null;
+    const pairs = normalizePairs(pairsRaw, app.men, app.women);
+    const meta = {
+      beams: c.beams,
+      blackout: c.blackout,
+      week: c.week ?? week
+    };
+    const out = { pairs, meta };
+    ceremonyCache.set(week, out);
+    return out;
+  }
+
+  // 4) Nothing found
+  const out = { pairs: [], meta: {} };
+  ceremonyCache.set(week, out);
+  return out;
+}
+
+function renderCeremonyTable(week, pairs, meta) {
+  // Title
+  elCeremonyTitle.textContent = `Week ${week} — Matchups`;
+
+  // Meta line (optional info)
+  const notes = [];
+  if (typeof meta.beams === "number") notes.push(`Beams: ${meta.beams}`);
+  if (typeof meta.blackout === "boolean") notes.push(meta.blackout ? "Blackout" : "Not a blackout");
+  elCeremonyMeta.textContent = notes.join(" • ");
+
+  // Table body
+  elCeremonyBody.innerHTML = "";
+  if (!pairs.length) {
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = 2;
+    td.textContent = "No ceremony data for this week.";
+    tr.appendChild(td);
+    elCeremonyBody.appendChild(tr);
+    return;
+  }
+
+  for (const { man, woman } of pairs) {
+    const tr = document.createElement("tr");
+    const tdM = document.createElement("td");
+    const tdW = document.createElement("td");
+    tdM.textContent = man;
+    tdW.textContent = woman;
+    tr.appendChild(tdM);
+    tr.appendChild(tdW);
+    elCeremonyBody.appendChild(tr);
+  }
+}
+
+
 function computeCellSize(cols) {
   const available = (elHeatmap?.clientWidth || window.innerWidth) - margin.left - margin.right;
   return Math.max(28, Math.min(64, Math.floor(available / Math.max(1, cols))));
@@ -191,6 +305,8 @@ async function loadWeek(week) {
     initOnce(data);
   }
   app.lastData = data;
+  const { pairs, meta } = await fetchCeremonyForWeek(week, data);
+  renderCeremonyTable(week, pairs, meta);
   patchValues(data);
 }
 
