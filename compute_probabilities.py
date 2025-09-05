@@ -144,6 +144,50 @@ def compute_probabilities_split_weeks(ceremony_dir: str, truth_dir: str, out_pre
         written.append(out_path)
     return written
 
+def compute_probabilities_for_week(ceremony_dir: str, truth_dir: str, out_prefix: str, week: int, *,
+                                   allow_comments: bool, verbose: bool):
+    # Load once
+    ceremony_objs = load_json_files(ceremony_dir, r"week_.*\.json", allow_comments=allow_comments, verbose=verbose)
+    truth_objs    = load_json_files(truth_dir,    r"booth_.*\.json", allow_comments=allow_comments, verbose=verbose)
+    if not ceremony_objs:
+        raise SystemExit("[ERROR] No ceremony files found (needed for roster).")
+
+    # Determine available week range
+    finite_weeks = [ _week_of(p) for (p, _) in ceremony_objs if _week_of(p) != math.inf ]
+    max_week = max(finite_weeks) if finite_weeks else 0  # should exist since ceremony_objs non-empty
+
+    if week < 0:
+        raise SystemExit(f"[ERROR] --split_week must be >= 0 (got {week})")
+    if week > max_week:
+        avail = ", ".join(map(str, sorted(set(finite_weeks)))) or "none"
+        raise SystemExit(
+            f"[ERROR] Requested week {week} exceeds max available week {max_week}.\n"
+            f"Available ceremony weeks: {avail}"
+        )
+
+    # Fix roster from earliest ceremony (supports matches- or matrix-format)
+    first_path, first_obj = sorted(ceremony_objs, key=lambda t: _week_of(t[0]))[0]
+    men, women = roster_from_ceremony_obj(first_obj, allow_from_matches=True)
+    if not men or not women:
+        raise SystemExit(f"[ERROR] {first_path} missing roster (and no 'matches' to infer it).")
+
+    # Keep only files with filename week <= requested week
+    cer_upto = _filter_upto_week(ceremony_objs, week)
+    tb_upto  = _filter_upto_week(truth_objs, week)
+
+    # Week 0 = truth booths only (remove ceremony constraints after using first file to define roster)
+    if week == 0:
+        prob = build_problem([(first_path, first_obj)], tb_upto)
+        prob.ceremonies = []
+    else:
+        prob = build_problem(cer_upto, tb_upto)
+
+    out_path = f"{out_prefix}_week_{week}.json"
+    _, total = _write_probabilities(prob, out_path)
+    if verbose:
+        print(f"[split] Wrote {out_path} (solutions counted: {total})")
+    return out_path
+
 
 def natural_key(path: str):
     return [int(t) if t.isdigit() else t.lower() for t in re.split(r'(\d+)', str(path))]
@@ -427,10 +471,16 @@ def main():
     ap.add_argument("--verbose", action="store_true", help="List files as they are read")
     ap.add_argument("--split_weeks", action="store_true",
                     help="Emit data_week_{k}.json for k=0..max_week using ceremonies/truth up to week k")
+    ap.add_argument("--split_week", type=int,
+                help="Compute probabilities using all data up to this week only (writes <base>_week_<k>.json)")
+
     args = ap.parse_args()
 
-    if args.split_weeks:
-        # derive prefix from --output (e.g., data.json -> data_week_*.json)
+    if args.split_week is not None:
+        base, _ = os.path.splitext(args.output)
+        compute_probabilities_for_week(args.ceremony_dir, args.truth_booth_dir, base, args.split_week,
+                                    allow_comments=args.allow_comments, verbose=args.verbose)
+    elif args.split_weeks:
         base, _ = os.path.splitext(args.output)
         written = compute_probabilities_split_weeks(args.ceremony_dir, args.truth_booth_dir, base,
                                                     allow_comments=args.allow_comments, verbose=args.verbose)
