@@ -164,3 +164,29 @@ main.layout {
   font-weight: 800;                   /* names pop */
   color: #0b1220;                     /* darker names */
 }
+
+/* Legend under the ceremony title/meta */
+.ceremony-legend{
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 6px 0 10px;
+  color: #3d4652;
+  font-size: 13px;
+}
+.legend-item{ display: inline-flex; align-items: center; gap: 8px; }
+.legend-dot{
+  width: 10px; height: 10px; border-radius: 50%;
+  border: 2px solid transparent;
+}
+.legend-dot.legend-new{ background: #8B5CF6; border-color: #6D28D9; }
+
+/* Highlight for a "never sat together before" pair */
+.ceremony-table tr.pair-new td{
+  background: #F3E8FF;          /* soft purple */
+  color: #4C1D95;               /* readable purple text */
+  font-weight: 800;             /* names pop */
+}
+.ceremony-table tr.pair-new td:first-child{
+  border-left: 4px solid #8B5CF6;  /* left stripe */
+}
