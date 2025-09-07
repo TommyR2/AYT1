@@ -1,15 +1,15 @@
 {
   "matches": [
-    { "man": "Zak",    "woman": "Cheyenne" },
-    { "man": "Devin",  "woman": "Hannah" },
-    { "man": "Tyler",  "woman": "Melanie" },
+    { "man": "Zak",    "woman": "Kayla" },
+    { "man": "Devin",  "woman": "Cheyenne" },
+    { "man": "Tyler",  "woman": "Amanda" },
     { "man": "Connor", "woman": "Chelsea" },
-    { "man": "Mike",   "woman": "Kayla" },
-    { "man": "Alec",   "woman": "Amanda" },
+    { "man": "Mike",   "woman": "Britney" },
+    { "man": "Alec",   "woman": "Stacey" },
     { "man": "Chuck",  "woman": "Kiki" },
-    { "man": "Nelson", "woman": "Britney" },
-    { "man": "Hunter", "woman": "Rashida" },
-    { "man": "Austin", "woman": "Stacey" }
+    { "man": "Nelson", "woman": "Rashida" },
+    { "man": "Hunter", "woman": "Melanie" },
+    { "man": "Austin", "woman": "Hannah" }
   ],
   "result": 2
 }
