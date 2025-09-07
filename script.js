@@ -21,26 +21,6 @@
     return div;
   })();
 
-  // Add CSS for perfect match highlighting
-  if (!document.getElementById('perfectMatchStyles')) {
-    const style = document.createElement('style');
-    style.id = 'perfectMatchStyles';
-    style.textContent = `
-      .pair-new {
-        background-color: #e6e6fa;
-        color: #4b0082;
-      }
-      .pair-certain {
-        background-color: #31ce01ff !important;
-        color: #19ba0aff !important;
-      }
-      .pair-certain:hover {
-        background-color: #ffeeba !important;
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
   // ====== Config & helpers ======
   const margin = { top: 130, right: 30, bottom: 50, left: 140 };
   const colorScale = d3
@@ -52,9 +32,10 @@
   const keyPair = (man, woman) => `${String(man).trim().toLowerCase()}||${String(woman).trim().toLowerCase()}`;
   const keyCell = (d) => `${d.man}|${d.woman}`;
 
+  // Slightly smaller minimum so dense grids still fit on phones
   const computeCellSize = (cols) => {
     const available = (elHeatmap?.clientWidth || window.innerWidth) - margin.left - margin.right;
-    return Math.max(28, Math.min(64, Math.floor(available / Math.max(1, cols))));
+    return Math.max(24, Math.min(64, Math.floor(available / Math.max(1, cols))));
   };
   const truncate = (str, max) => (str.length > max ? str.slice(0, Math.max(1, max - 1)) + '…' : str);
 
@@ -164,7 +145,6 @@
       Cache.set(`data:${w}`, data);
       weeks.push(w);
       // Opportunistically cache ceremony too
-      // (doesn't block boot; if missing, load lazily on render)
       loadCeremonyForWeek(w, data).catch(() => {});
     }
     return weeks; // [0..max]
@@ -176,7 +156,6 @@
     for (const w of weeks) {
       const weekly = Cache.get(`data:${w}`);
       const { pairs } = extractCeremonyFromWeeklyData(weekly);
-      // include pairs from embedded ceremony if present; if not, use cached ceremony when loaded
       const embedded = (pairs && pairs.length) ? pairs : (Cache.get(`ceremony:${w}`)?.pairs || []);
       priorPairsByWeek.set(w, new Set(seen));
       for (const p of embedded) seen.add(keyPair(p.man, p.woman));
@@ -296,7 +275,6 @@
       .attr('height', legendHeight)
       .style('fill', 'url(#legendGradient)');
 
-    // Use currentColor so text adapts to light/dark; avoid dominant-baseline (Safari quirks)
     const labelY = barY + legendHeight + 24;
     legendSvg.append('text')
       .attr('x', barX)
@@ -315,13 +293,14 @@
   }
 
   function renderCeremonyLegendOnce() {
+    // All styling handled via CSS classes (no inline styles)
     elCeremonyLegend.innerHTML = `
       <div class="legend-item">
         <span class="legend-dot legend-new"></span>
         <span>Never sat together before</span>
       </div>
       <div class="legend-item">
-        <span class="legend-dot" style="background-color: #28a745; border: 1px solid #28a745;"></span>
+        <span class="legend-dot legend-perfect"></span>
         <span>Perfect match</span>
       </div>
     `;
@@ -401,7 +380,7 @@
     for (const b of elWeekNav.querySelectorAll('.btn')) b.classList.toggle('active', Number(b.dataset.week) === w);
 
     const data = Cache.get(`data:${w}`);
-    if (!data) return; // should not happen after prefetch
+    if (!data) return;
 
     // Rebuild scene if names changed shape across weeks
     const sameShape = JSON.stringify(data.men) === JSON.stringify(app.men) && JSON.stringify(data.women) === JSON.stringify(app.women);
@@ -449,21 +428,20 @@
 
   // ====== Boot (guarded) ======
   async function boot() {
-    if (app.booted) return; // guard
+    if (app.booted) return;
     app.booted = true;
 
-    const weeks = await discoverAndPrefetch(60); // prefetch once
+    const weeks = await discoverAndPrefetch(60);
     if (!weeks.length) return;
     app.weekList = weeks;
 
-    // Precompute prior-pair sets once (no future re-fetch)
+    // Precompute prior-pair sets once
     app.priorPairsByWeek = precomputePriorPairs(weeks);
 
     buildWeekButtons(weeks);
     await selectWeek(weeks[weeks.length - 1]); // default to latest
   }
 
-  // Ensure run-once even if script is included twice accidentally
   if (!window.__HEATMAP_APP_BOOTED__) {
     window.__HEATMAP_APP_BOOTED__ = true;
     window.addEventListener('DOMContentLoaded', boot, { once: true });

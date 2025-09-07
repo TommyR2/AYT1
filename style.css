@@ -4,10 +4,14 @@
 body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
-  background: #f3f4f6;     /* a touch darker */
-  color: #0a0a0a;          /* darker text */
+  background: #f3f4f6;
+  color: #0a0a0a;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* iOS safe areas */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 /* ---------- Header ---------- */
@@ -15,7 +19,7 @@ header {
   background: #fff;
   color: #0a0a0a;
   padding: 16px 20px;
-  border-bottom: 2px solid #d4d8e0;  /* thicker */
+  border-bottom: 2px solid #d4d8e0;
 }
 header h1 {
   margin: 0 0 10px 0;
@@ -28,24 +32,28 @@ header h1 {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  overflow-x: auto;                 /* better on phones */
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
 }
 .week-buttons .btn {
   appearance: none;
   background: #fff;
   color: #0a0a0a;
-  border: 2px solid #bfc6d1;         /* thicker */
+  border: 2px solid #bfc6d1;
   padding: 6px 12px;
   border-radius: 999px;
   cursor: pointer;
   font-size: 14px;
   line-height: 1;
   transition: background .15s ease, border-color .15s ease, transform .05s ease;
+  white-space: nowrap;
 }
 .week-buttons .btn:hover { background: #eef2f6; }
 .week-buttons .btn:active { transform: translateY(1px); }
 .week-buttons .btn.active {
-  background: #dbf4e3;               /* darker than before */
-  border-color: #8ecda0;             /* stronger border */
+  background: #dbf4e3;
+  border-color: #8ecda0;
   color: #0b3d25;
   font-weight: 700;
 }
@@ -65,17 +73,27 @@ main.layout {
 }
 
 /* ---------- Heatmap & Legend ---------- */
-#heatmap { width: 100%; }
-#heatmap svg {
+#heatmap {
   width: 100%;
+  overflow-x: auto;                 /* key: don’t cut off on phones */
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Let the SVG use its intrinsic width from JS (no forced shrink),
+   but keep all the pretty card styles. */
+#heatmap svg {
+  display: block;
+  height: auto;
+  max-width: none;
   background: #fff;
   border-radius: 10px;
-  border: 2px solid #d4d8e0;         /* thicker card border */
+  border: 2px solid #d4d8e0;
   box-shadow: 0 1px 3px rgba(0,0,0,.06);
 }
 
-/* Make axis names very readable */
-.axis text {
+/* Axis label styling */
+.axis {
   fill: #0b1220;
   font-weight: 800;
   letter-spacing: .1px;
@@ -84,9 +102,14 @@ main.layout {
   stroke-width: 3px;
 }
 
+/* On very small screens, lighten the outline so text stays crisp */
+@media (max-width: 480px) {
+  .axis { stroke-width: 1.6px; }
+}
+
 .cell {
-  stroke: rgba(0,0,0,.22);           /* a bit darker */
-  stroke-width: 1.25px;              /* thicker grid lines */
+  stroke: rgba(0,0,0,.22);
+  stroke-width: 1.25px;
   vector-effect: non-scaling-stroke;
   shape-rendering: crispEdges;
   transition: stroke .15s ease;
@@ -96,7 +119,7 @@ main.layout {
 .tooltip {
   position: absolute;
   background: #fff;
-  border: 2px solid #d4d8e0;         /* thicker */
+  border: 2px solid #d4d8e0;
   padding: 8px 10px;
   font-size: 13px;
   border-radius: 8px;
@@ -106,16 +129,13 @@ main.layout {
   opacity: 0;
   transition: opacity .15s ease;
 }
-
-.tooltip.visible {
-  opacity: 0.95;
-}
+.tooltip.visible { opacity: 0.95; }
 
 #legend { margin-top: 16px; }
 #legend > svg {
   display: block;
   background: #fff;
-  border: 2px solid #d4d8e0;         /* thicker */
+  border: 2px solid #d4d8e0;
   border-radius: 10px;
   padding: 10px 12px 14px;
   box-shadow: 0 1px 3px rgba(0,0,0,.06);
@@ -127,7 +147,7 @@ main.layout {
 
 .ceremony {
   background: #fff;
-  border: 2px solid #cfd4de;         /* thicker + darker */
+  border: 2px solid #cfd4de;
   border-radius: 10px;
   padding: 14px;
 }
@@ -147,12 +167,11 @@ main.layout {
 .ceremony-table {
   width: 100%;
   border-collapse: collapse;
-  border: 2px solid #cfd4de;         /* outer border */
-  border-radius: 8px;                 /* for visual softness (won’t show with collapse, but fine) */
+  border: 2px solid #cfd4de;
 }
 .ceremony-table th, .ceremony-table td {
   padding: 10px 12px;
-  border-bottom: 2px solid #e1e5ec;  /* thicker row dividers */
+  border-bottom: 2px solid #e1e5ec;
   text-align: left;
   font-size: 14px;
 }
@@ -167,8 +186,8 @@ main.layout {
 
 .ceremony-table td:first-child,
 .ceremony-table td:last-child{
-  font-weight: 800;                   /* names pop */
-  color: #0b1220;                     /* darker names */
+  font-weight: 800;
+  color: #0b1220;
 }
 
 /* Legend under the ceremony title/meta */
@@ -187,36 +206,34 @@ main.layout {
 }
 .legend-dot.legend-new{ background: #8B5CF6; border-color: #6D28D9; }
 
-/* Perfect match legend dot */
-.legend-dot.legend-perfect { 
-  background: #fff3cd; 
-  border: 1px solid #ffeaa7; 
+/* Perfect match dot: green to match row highlight */
+.legend-dot.legend-perfect {
+  background: #28a745;
+  border-color: #28a745;
 }
 
 /* Highlight for a "never sat together before" pair */
 .ceremony-table tr.pair-new td{
-  background: #F3E8FF;          /* soft purple */
-  color: #4C1D95;               /* readable purple text */
-  font-weight: 800;             /* names pop */
+  background: #F3E8FF;
+  color: #4C1D95;
+  font-weight: 800;
 }
 .ceremony-table tr.pair-new td:first-child{
-  border-left: 4px solid #8B5CF6;  /* left stripe */
+  border-left: 4px solid #8B5CF6;
 }
 
 /* Perfect match highlighting - green background */
 .ceremony-table tbody tr.pair-certain td{
-  background: #d4edda !important;   /* light green background */
-  color: #155724 !important;        /* dark green text */
+  background: #d4edda !important;
+  color: #155724 !important;
   font-weight: 800;
 }
 .ceremony-table tbody tr.pair-certain td:first-child{
-  border-left: 4px solid #28a745 !important;  /* green left stripe */
+  border-left: 4px solid #28a745 !important;
 }
 .ceremony-table tbody tr.pair-certain:hover td{
-  background: #c3e6cb !important;   /* slightly darker green on hover */
+  background: #c3e6cb !important;
 }
 
 /* Utility classes */
-.hidden { 
-  display: none !important; 
-}
+.hidden { display: none !important; }
