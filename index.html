@@ -1,11 +1,14 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Match Probability Heatmap</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
   <link rel="stylesheet" href="style.css" />
-  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js" defer></script>
+  <script src="script.js" defer></script>
 </head>
 <body>
   <header>
@@ -15,13 +18,15 @@
 
   <main class="layout">
     <section class="left">
-      <div id="heatmap"></div>
+      <!-- horizontally scrollable wrapper for small screens -->
+      <div id="heatmap" class="heatmap-wrap" aria-label="Probability heatmap"></div>
       <div id="legend"></div>
     </section>
 
     <aside id="sidebar">
       <section id="ceremony" class="ceremony">
         <h2 id="ceremonyTitle">Week — Matchups</h2>
+        <div id="ceremonyResult" class="ceremony-result" aria-live="polite"></div>
         <div id="ceremonyMeta" class="ceremony-meta"></div>
         <table id="ceremonyTable" class="ceremony-table" aria-describedby="ceremonyMeta">
           <thead>
@@ -32,7 +37,5 @@
       </section>
     </aside>
   </main>
-
-  <script src="script.js"></script>
 </body>
 </html>
