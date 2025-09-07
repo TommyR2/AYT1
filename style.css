@@ -1,192 +1,82 @@
-/* ---------- Base ---------- */
-* { box-sizing: border-box; }
 
-body {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  margin: 0;
-  background: #f3f4f6;     /* a touch darker */
-  color: #0a0a0a;          /* darker text */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+/* Base polish */
+html, body { height: 100%; }
+body { margin: 0; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; -webkit-tap-highlight-color: transparent; }
 
-/* ---------- Header ---------- */
-header {
-  background: #fff;
-  color: #0a0a0a;
-  padding: 16px 20px;
-  border-bottom: 2px solid #d4d8e0;  /* thicker */
-}
-header h1 {
-  margin: 0 0 10px 0;
-  font-weight: 800;
-  letter-spacing: .1px;
-}
+/* Page layout */
+.layout { display: flex; gap: 1rem; align-items: flex-start; padding: 0 1rem 1rem; }
+.layout .left { flex: 2 1 640px; min-width: 0; }
+#sidebar { flex: 1 1 320px; position: sticky; top: calc(48px + env(safe-area-inset-top)); align-self: flex-start; max-height: calc(100vh - 80px); overflow: auto; padding-right: .25rem; }
 
-/* ---------- Week buttons ---------- */
-.week-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.week-buttons .btn {
-  appearance: none;
-  background: #fff;
-  color: #0a0a0a;
-  border: 2px solid #bfc6d1;         /* thicker */
-  padding: 6px 12px;
-  border-radius: 999px;
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-  transition: background .15s ease, border-color .15s ease, transform .05s ease;
-}
-.week-buttons .btn:hover { background: #eef2f6; }
-.week-buttons .btn:active { transform: translateY(1px); }
-.week-buttons .btn.active {
-  background: #dbf4e3;               /* darker than before */
-  border-color: #8ecda0;             /* stronger border */
-  color: #0b3d25;
-  font-weight: 700;
-}
+/* Heatmap area: allow horizontal scroll on phones */
+.heatmap-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
+.heatmap-wrap svg { display: block; }
 
-/* ---------- Layout ---------- */
-main { padding: 20px; }
-main.layout {
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 22px;
-  max-width: 1180px;
-  margin: 0 auto;
-  align-items: start;
-}
-@media (max-width: 980px){
-  main.layout { grid-template-columns: 1fr; }
-}
+/* Week buttons: touch friendly & scrollable */
+.week-buttons { display: flex; gap: .5rem; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: .5rem 1rem; position: sticky; top: env(safe-area-inset-top); background: inherit; border-bottom: 1px solid rgba(127,127,127,.25); }
+.week-buttons .btn { flex: 0 0 auto; padding: .5rem .75rem; min-height: 40px; font-size: 16px; border-radius: .75rem; border: 1px solid rgba(127,127,127,.35); background: transparent; color: inherit; }
+.week-buttons .btn.active { border-color: rgba(127,127,127,.7); box-shadow: 0 0 0 2px rgba(127,127,127,.15) inset; }
 
-/* ---------- Heatmap & Legend ---------- */
-#heatmap { width: 100%; }
-#heatmap svg {
-  width: 100%;
-  background: #fff;
-  border-radius: 10px;
-  border: 2px solid #d4d8e0;         /* thicker card border */
-  box-shadow: 0 1px 3px rgba(0,0,0,.06);
-}
+/* Ceremony table tweaks */
+.ceremony-table { width: 100%; border-collapse: collapse; }
+.ceremony-table th, .ceremony-table td { padding: 10px 12px; border-bottom: 1px solid rgba(127,127,127,.25); }
+.ceremony .pair-new { background: color-mix(in srgb, #00ff88 12%, transparent); }
 
-/* Make axis names very readable */
-.axis text {
-  fill: #0b1220;
-  font-weight: 800;
-  letter-spacing: .1px;
-  paint-order: stroke fill;
-  stroke: #fff;
-  stroke-width: 3px;
-}
+/* Legend spacing */
+#legend { padding: .5rem 1rem .75rem; }
+#legend svg { overflow: visible; }
+#legend svg text { fill: currentColor; font-size: 12px; }
 
-.cell {
-  stroke: rgba(0,0,0,.22);           /* a bit darker */
-  stroke-width: 1.25px;              /* thicker grid lines */
-  vector-effect: non-scaling-stroke;
-  shape-rendering: crispEdges;
-  transition: stroke .15s ease;
-}
-.cell:hover { stroke: #222; stroke-width: 2.25px; }
+/* Header */
+header { position: sticky; top: 0; padding: .5rem 1rem; padding-top: calc(.5rem + env(safe-area-inset-top)); background: inherit; z-index: 10; }
+header h1 { font-size: 1.25rem; margin: 0 0 .25rem; }
 
-.tooltip {
-  position: absolute;
-  background: #fff;
-  border: 2px solid #d4d8e0;         /* thicker */
-  padding: 8px 10px;
-  font-size: 13px;
-  border-radius: 8px;
-  pointer-events: none;
-  box-shadow: 0 2px 10px rgba(0,0,0,.1);
-  color: #0a0a0a;
+/* Responsive: stack on small screens */
+@media (max-width: 900px) {
+  #sidebar { top: calc(44px + env(safe-area-inset-top)); }
 }
+@media (max-width: 768px) {
+  .layout { flex-direction: column; }
+  #sidebar { position: static; max-height: none; padding-right: 0; }
+  .ceremony-table th, .ceremony-table td { padding: 8px 10px; }
+}
+```css
+/* Base polish */
+html, body { height: 100%; }
+body { margin: 0; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; -webkit-tap-highlight-color: transparent; }
 
-#legend { margin-top: 16px; }
-#legend > svg {
-  display: block;
-  background: #fff;
-  border: 2px solid #d4d8e0;         /* thicker */
-  border-radius: 10px;
-  padding: 10px 12px 14px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.06);
-}
+/* Page layout */
+.layout { display: flex; gap: 1rem; align-items: flex-start; padding: 0 1rem 1rem; }
+.layout .left { flex: 2 1 640px; min-width: 0; }
+#sidebar { flex: 1 1 320px; position: sticky; top: calc(48px + env(safe-area-inset-top)); align-self: flex-start; max-height: calc(100vh - 80px); overflow: auto; padding-right: .25rem; }
 
-/* ---------- Ceremony (right column) ---------- */
-#sidebar { position: sticky; top: 12px; align-self: start; }
-@media (max-width: 980px){ #sidebar { position: static; } }
+/* Heatmap area: allow horizontal scroll on phones */
+.heatmap-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
+.heatmap-wrap svg { display: block; }
 
-.ceremony {
-  background: #fff;
-  border: 2px solid #cfd4de;         /* thicker + darker */
-  border-radius: 10px;
-  padding: 14px;
-}
-.ceremony h2 {
-  margin: 0 0 6px;
-  font-size: 18px;
-  font-weight: 800;
-  color: #0b1220;
-}
-.ceremony-meta {
-  color: #4b5563;
-  font-size: 12px;
-  margin: 0 0 10px;
-}
+/* Week buttons: touch friendly & scrollable */
+.week-buttons { display: flex; gap: .5rem; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: .5rem 1rem; position: sticky; top: env(safe-area-inset-top); background: inherit; border-bottom: 1px solid rgba(127,127,127,.25); }
+.week-buttons .btn { flex: 0 0 auto; padding: .5rem .75rem; min-height: 40px; font-size: 16px; border-radius: .75rem; border: 1px solid rgba(127,127,127,.35); background: transparent; color: inherit; }
+.week-buttons .btn.active { border-color: rgba(127,127,127,.7); box-shadow: 0 0 0 2px rgba(127,127,127,.15) inset; }
 
-/* Table with heavier lines and darker text */
-.ceremony-table {
-  width: 100%;
-  border-collapse: collapse;
-  border: 2px solid #cfd4de;         /* outer border */
-  border-radius: 8px;                 /* for visual softness (won’t show with collapse, but fine) */
-}
-.ceremony-table th, .ceremony-table td {
-  padding: 10px 12px;
-  border-bottom: 2px solid #e1e5ec;  /* thicker row dividers */
-  text-align: left;
-  font-size: 14px;
-}
-.ceremony-table th {
-  color: #3d4652;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-  background: #f2f4f8;
-}
-.ceremony-table tbody tr:nth-child(even){ background: #f9fafb; }
-.ceremony-table tbody tr:hover{ background: #e9fff0; }
+/* Ceremony table tweaks */
+.ceremony-table { width: 100%; border-collapse: collapse; }
+.ceremony-table th, .ceremony-table td { padding: 10px 12px; border-bottom: 1px solid rgba(127,127,127,.25); }
+.ceremony .pair-new { background: color-mix(in srgb, #00ff88 12%, transparent); }
 
-.ceremony-table td:first-child,
-.ceremony-table td:last-child{
-  font-weight: 800;                   /* names pop */
-  color: #0b1220;                     /* darker names */
-}
+/* Legend spacing */
+#legend { padding: .5rem 1rem .75rem; }
 
-/* Legend under the ceremony title/meta */
-.ceremony-legend{
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin: 6px 0 10px;
-  color: #3d4652;
-  font-size: 13px;
-}
-.legend-item{ display: inline-flex; align-items: center; gap: 8px; }
-.legend-dot{
-  width: 10px; height: 10px; border-radius: 50%;
-  border: 2px solid transparent;
-}
-.legend-dot.legend-new{ background: #8B5CF6; border-color: #6D28D9; }
+/* Header */
+header { position: sticky; top: 0; padding: .5rem 1rem; padding-top: calc(.5rem + env(safe-area-inset-top)); background: inherit; z-index: 10; }
+header h1 { font-size: 1.25rem; margin: 0 0 .25rem; }
 
-/* Highlight for a "never sat together before" pair */
-.ceremony-table tr.pair-new td{
-  background: #F3E8FF;          /* soft purple */
-  color: #4C1D95;               /* readable purple text */
-  font-weight: 800;             /* names pop */
+/* Responsive: stack on small screens */
+@media (max-width: 900px) {
+  #sidebar { top: calc(44px + env(safe-area-inset-top)); }
 }
-.ceremony-table tr.pair-new td:first-child{
-  border-left: 4px solid #8B5CF6;  /* left stripe */
+@media (max-width: 768px) {
+  .layout { flex-direction: column; }
+  #sidebar { position: static; max-height: none; padding-right: 0; }
+  .ceremony-table th, .ceremony-table td { padding: 8px 10px; }
 }
