@@ -322,7 +322,7 @@
       </div>
       <div class="legend-item">
         <span class="legend-dot" style="background-color: #28a745; border: 1px solid #28a745;"></span>
-        <span>Perfect match (100% probability)</span>
+        <span>Perfect match</span>
       </div>
     `;
   }
