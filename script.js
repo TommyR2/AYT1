@@ -208,14 +208,14 @@
       .append('g').attr('class', 'xLabel')
       .selectAll('text').data(app.men).enter().append('text')
       .attr('x', (d) => app.x(d) + app.cellSize / 2)
-      .attr('y', margin.top - 8)
+      .attr('y', rotateX ? margin.top - 30 : margin.top - 8)
       .attr('font-size', labelFont)
       .attr('class', 'axis')
       .attr('text-anchor', rotateX ? 'end' : 'middle')
       .attr('dominant-baseline', 'ideographic')
       .text((d) => truncate(d, Math.max(2, Math.floor(app.cellSize * 0.23))))
       .each(function (d) { d3.select(this).append('title').text(d); });
-    if (rotateX) xLabels.attr('transform', (d) => `rotate(-40, ${app.x(d) + app.cellSize / 2}, ${margin.top - 8})`);
+    if (rotateX) xLabels.attr('transform', (d) => `rotate(-40, ${app.x(d) + app.cellSize / 2}, ${margin.top - 30})`);
     else xLabels.attr('dy', (_, i) => (i % 2 ? -18 : -2));
 
     // Y labels (women)
