@@ -103,6 +103,12 @@ main.layout {
   pointer-events: none;
   box-shadow: 0 2px 10px rgba(0,0,0,.1);
   color: #0a0a0a;
+  opacity: 0;
+  transition: opacity .15s ease;
+}
+
+.tooltip.visible {
+  opacity: 0.95;
 }
 
 #legend { margin-top: 16px; }
@@ -181,6 +187,12 @@ main.layout {
 }
 .legend-dot.legend-new{ background: #8B5CF6; border-color: #6D28D9; }
 
+/* Perfect match legend dot */
+.legend-dot.legend-perfect { 
+  background: #fff3cd; 
+  border: 1px solid #ffeaa7; 
+}
+
 /* Highlight for a "never sat together before" pair */
 .ceremony-table tr.pair-new td{
   background: #F3E8FF;          /* soft purple */
@@ -189,4 +201,22 @@ main.layout {
 }
 .ceremony-table tr.pair-new td:first-child{
   border-left: 4px solid #8B5CF6;  /* left stripe */
+}
+
+/* Perfect match highlighting - green background */
+.ceremony-table tbody tr.pair-certain td{
+  background: #d4edda !important;   /* light green background */
+  color: #155724 !important;        /* dark green text */
+  font-weight: 800;
+}
+.ceremony-table tbody tr.pair-certain td:first-child{
+  border-left: 4px solid #28a745 !important;  /* green left stripe */
+}
+.ceremony-table tbody tr.pair-certain:hover td{
+  background: #c3e6cb !important;   /* slightly darker green on hover */
+}
+
+/* Utility classes */
+.hidden { 
+  display: none !important; 
 }

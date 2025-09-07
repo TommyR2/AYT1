@@ -21,6 +21,26 @@
     return div;
   })();
 
+  // Add CSS for perfect match highlighting
+  if (!document.getElementById('perfectMatchStyles')) {
+    const style = document.createElement('style');
+    style.id = 'perfectMatchStyles';
+    style.textContent = `
+      .pair-new {
+        background-color: #e6e6fa;
+        color: #4b0082;
+      }
+      .pair-certain {
+        background-color: #31ce01ff !important;
+        color: #19ba0aff !important;
+      }
+      .pair-certain:hover {
+        background-color: #ffeeba !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   // ====== Config & helpers ======
   const margin = { top: 130, right: 30, bottom: 50, left: 140 };
   const colorScale = d3
@@ -299,6 +319,10 @@
       <div class="legend-item">
         <span class="legend-dot legend-new"></span>
         <span>Never sat together before</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot" style="background-color: #28a745; border: 1px solid #28a745;"></span>
+        <span>Perfect match (100% probability)</span>
       </div>
     `;
   }
