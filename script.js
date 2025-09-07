@@ -1,4 +1,3 @@
-
 (() => {
   'use strict';
 
@@ -64,7 +63,7 @@
 
   async function fetchJSON(url) {
     try {
-      const r = await fetch(url, { cache: 'default' });
+      const r = await fetch(url, { cache: 'no-cache' });
       if (!r.ok) return null;
       return await r.json();
     } catch {
