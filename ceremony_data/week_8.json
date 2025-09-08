@@ -2,11 +2,11 @@
   "matches": [
     {
       "man": "Alex",
-      "woman": "Ellie"
+      "woman": "Jasmine"
     },
     {
       "man": "Anthony",
-      "woman": "Alexandria"
+      "woman": "Jessica"
     },
     {
       "man": "Brandon",
@@ -14,32 +14,32 @@
     },
     {
       "man": "Curtis",
-      "woman": "Briana"
-    },
-    {
-      "man": "Dario",
       "woman": "Shelby"
     },
     {
-      "man": "Garland",
-      "woman": "Jasmine"
-    },
-    {
-      "man": "John",
+      "man": "Dario",
       "woman": "Ashley"
     },
     {
+      "man": "Garland",
+      "woman": "Alexandria"
+    },
+    {
+      "man": "John",
+      "woman": "Jenni"
+    },
+    {
       "man": "Layton",
-      "woman": "Jessica"
+      "woman": "Ellie"
     },
     {
       "man": "Nathan",
-      "woman": "Jenni"
+      "woman": "Briana"
     },
     {
       "man": "Pratt",
       "woman": "Paris"
     }
   ],
-  "result": 2
+  "result": 5
 }
