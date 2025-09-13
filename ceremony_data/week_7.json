@@ -1,0 +1,15 @@
+{
+  "matches": [
+    { "man": "Zak",    "woman": "Hannah" },
+    { "man": "Devin",  "woman": "Britney" },
+    { "man": "Tyler",  "woman": "Cheyenne" },
+    { "man": "Connor", "woman": "Chelsea" },
+    { "man": "Mike",   "woman": "Stacey" },
+    { "man": "Alec",   "woman": "Rashida" },
+    { "man": "Chuck",  "woman": "Melanie" },
+    { "man": "Nelson", "woman": "Kiki" },
+    { "man": "Hunter", "woman": "Amanda" },
+    { "man": "Austin", "woman": "Kayla" }
+  ],
+  "result": 3
+}
