@@ -8,9 +8,10 @@ matchings, and writes data.json with pairwise probabilities.
 
 Usage:
   python compute_probabilities.py \
-      --ceremony_dir ceremony_data \
-      --truth_booth_dir truth_booth_data \
-      --output data.json \
+      --season season1 \
+      --ceremony_dir seasons/season1/ceremony_data \
+      --truth_booth_dir seasons/season1/truth_booth_data \
+      --output seasons/season1/data.json \
       [--allow_comments] [--verbose]
 """
 import argparse, json, os, re, sys
@@ -21,6 +22,8 @@ from typing import List, Dict
 
 # --- add near the other imports ---
 import math
+import glob
+from pathlib import Path
 
 
 def roster_from_ceremony_obj(obj, allow_from_matches=False):
@@ -462,11 +465,57 @@ def compute_probabilities(ceremony_dir: str, truth_dir: str, out_path: str, *, a
         json.dump(out, fh, indent=2)
     return out_path, total
 
+# --- new: helper to discover available seasons ---
+def discover_seasons(base_dir="seasons"):
+    """Return a list of available season directories."""
+    if not os.path.isdir(base_dir):
+        return []
+    
+    seasons = []
+    for item in os.listdir(base_dir):
+        season_dir = os.path.join(base_dir, item)
+        if os.path.isdir(season_dir):
+            # Check if this looks like a valid season dir (has any data files)
+            has_data = False
+            
+            # Check for ceremony/truth booth directories
+            ceremony_dir = os.path.join(season_dir, "ceremony_data")
+            truth_dir = os.path.join(season_dir, "truth_booth_data")
+            if (os.path.isdir(ceremony_dir) and any(glob.glob(os.path.join(ceremony_dir, "*.json")))) or \
+               (os.path.isdir(truth_dir) and any(glob.glob(os.path.join(truth_dir, "*.json")))):
+                has_data = True
+            
+            # Check for any JSON files in the season directory
+            if not has_data and any(glob.glob(os.path.join(season_dir, "*.json"))):
+                has_data = True
+                
+            if has_data:
+                # Support both "seasonN" and "N" formats
+                seasons.append(item)
+    
+    return sorted(seasons, key=lambda s: (not s.startswith('season'), s))  # Sort with 'season' prefix first
+
+# --- new: ensure season directories exist ---
+def ensure_season_dirs(season, base_dir="seasons"):
+    """Create necessary directories for a season if they don't exist."""
+    season_dir = os.path.join(base_dir, season)
+    ceremony_dir = os.path.join(season_dir, "ceremony_data")
+    truth_dir = os.path.join(season_dir, "truth_booth_data")
+    
+    os.makedirs(season_dir, exist_ok=True)
+    os.makedirs(ceremony_dir, exist_ok=True)
+    os.makedirs(truth_dir, exist_ok=True)
+    
+    return season_dir, ceremony_dir, truth_dir
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--ceremony_dir", default="ceremony_data")
-    ap.add_argument("--truth_booth_dir", default="truth_booth_data")
-    ap.add_argument("--output", default="data.json")
+    ap.add_argument("--season", help="Process a specific season (e.g., 'season1')")
+    ap.add_argument("--ceremony_dir", help="Directory containing ceremony JSON files")
+    ap.add_argument("--truth_booth_dir", help="Directory containing truth booth JSON files")
+    ap.add_argument("--output", help="Output file path")
+    ap.add_argument("--all_seasons", action="store_true", help="Process all available seasons")
+    ap.add_argument("--seasons_dir", default="seasons", help="Base directory containing season folders")
     ap.add_argument("--allow_comments", action="store_true", help="Allow // and /* */ comments in JSON files")
     ap.add_argument("--verbose", action="store_true", help="List files as they are read")
     ap.add_argument("--split_weeks", action="store_true",
@@ -475,7 +524,33 @@ def main():
                 help="Compute probabilities using all data up to this week only (writes <base>_week_<k>.json)")
 
     args = ap.parse_args()
+    
+    # Process all seasons if requested
+    if args.all_seasons:
+        results = process_all_seasons(args.seasons_dir, allow_comments=args.allow_comments, verbose=args.verbose)
+        for season, files in results:
+            if files:
+                print(f"{season}: Wrote {len(files)} files")
+        return
+    
+    # If season is specified but no paths, use default paths
+    if args.season and not (args.ceremony_dir and args.truth_booth_dir and args.output):
+        season_dir, ceremony_dir, truth_dir = ensure_season_dirs(args.season, args.seasons_dir)
+        
+        if not args.ceremony_dir:
+            args.ceremony_dir = ceremony_dir
+        if not args.truth_booth_dir:
+            args.truth_booth_dir = truth_dir
+        if not args.output:
+            args.output = os.path.join(season_dir, "data.json")
+    
+    # Check if required arguments are provided for processing a single season
+    if not args.ceremony_dir or not args.truth_booth_dir or not args.output:
+        if not args.all_seasons:
+            ap.error("Either specify --all_seasons, or provide --ceremony_dir, --truth_booth_dir, and --output")
+        return
 
+    # Standard processing with specified directories
     if args.split_week is not None:
         base, _ = os.path.splitext(args.output)
         compute_probabilities_for_week(args.ceremony_dir, args.truth_booth_dir, base, args.split_week,

@@ -27,6 +27,36 @@ header h1 {
   letter-spacing: .1px;
 }
 
+/* ---------- Season selector ---------- */
+.season-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.season-selector .btn {
+  appearance: none;
+  background: #fff;
+  color: #0a0a0a;
+  border: 2px solid #4a5568;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  transition: background .15s ease, border-color .15s ease, transform .05s ease;
+  white-space: nowrap;
+}
+.season-selector .btn:hover { background: #eef2f6; }
+.season-selector .btn:active { transform: translateY(1px); }
+.season-selector .btn.active {
+  background: #4a5568;
+  border-color: #2d3748;
+  color: #fff;
+  font-weight: 700;
+}
+
 /* ---------- Week buttons ---------- */
 .week-buttons {
   display: flex;
@@ -237,3 +267,8 @@ main.layout {
 
 /* Utility classes */
 .hidden { display: none !important; }
+.no-data {
+  padding: 10px;
+  color: #718096;
+  font-style: italic;
+}

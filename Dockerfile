@@ -8,7 +8,7 @@ COPY index.html /usr/share/nginx/html/
 COPY style.css  /usr/share/nginx/html/
 COPY script.js  /usr/share/nginx/html/
 
-COPY ceremony_data/ /usr/share/nginx/html/ceremony_data/
+COPY seasons/ /usr/share/nginx/html/seasons/
 
 # Copy JSON files explicitly (this should invalidate cache when files change)
 COPY data_week_*.json /usr/share/nginx/html/

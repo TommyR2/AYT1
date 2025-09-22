@@ -1,0 +1,45 @@
+{
+  "matches": [
+    {
+      "man": "Alex",
+      "woman": "Ellie"
+    },
+    {
+      "man": "Anthony",
+      "woman": "Ashley"
+    },
+    {
+      "man": "Brandon",
+      "woman": "Jasmine"
+    },
+    {
+      "man": "Curtis",
+      "woman": "Shelby"
+    },
+    {
+      "man": "Dario",
+      "woman": "Alexandria"
+    },
+    {
+      "man": "Garland",
+      "woman": "Tyler"
+    },
+    {
+      "man": "John",
+      "woman": "Jenni"
+    },
+    {
+      "man": "Layton",
+      "woman": "Briana"
+    },
+    {
+      "man": "Nathan",
+      "woman": "Jessica"
+    },
+    {
+      "man": "Pratt",
+      "woman": "Paris"
+    }
+  ],
+  "result": 3
+}

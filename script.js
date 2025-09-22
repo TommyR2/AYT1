@@ -9,6 +9,7 @@
   const elCeremonyResult = document.getElementById('ceremonyResult');
   const elCeremonyMeta = document.getElementById('ceremonyMeta');
   const elCeremonyBody = document.querySelector('#ceremonyTable tbody');
+  const elSeasonNav = document.getElementById('seasonSelector');
 
   // Create / ensure ceremony legend container
   const elCeremonyLegend = document.getElementById('ceremonyLegend') || (() => {
@@ -60,7 +61,10 @@
   };
 
   // ====== Data layer (prefetch once) ======
-  const Cache = new Map(); // keys: data:w, ceremony:w
+  const Cache = new Map(); // keys: data:season:w, ceremony:season:w
+  
+  // List of available seasons (can be updated dynamically)
+  const availableSeasons = ['season1', 'season2', 'season3'];
 
   async function fetchJSON(url) {
     try {
@@ -101,62 +105,105 @@
     return { pairs, meta };
   }
 
-  async function loadCeremonyForWeek(week, weeklyData) {
-    if (Cache.has(`ceremony:${week}`)) return Cache.get(`ceremony:${week}`);
+  async function loadCeremonyForWeek(season, week, weeklyData) {
+    const cacheKey = `ceremony:${season}:${week}`;
+    if (Cache.has(cacheKey)) return Cache.get(cacheKey);
 
     // Prefer embedded in weekly data
     const embedded = extractCeremonyFromWeeklyData(weeklyData);
     if (embedded.pairs.length) {
-      Cache.set(`ceremony:${week}`, embedded);
+      Cache.set(cacheKey, embedded);
       return embedded;
     }
 
-    // Try separate files
-    const extra = await fetchJSON(`ceremony_data/week_${week}.json`);
+    // Try separate files with season path
+    const extra = await fetchJSON(`seasons/${season}/ceremony_data/week_${week}.json`);
     if (extra) {
       const c = extra.ceremony || extra;
       const pairs = normalizePairs(c.pairs ?? c.matches ?? c.matchups ?? c.couples ?? null);
       const meta = { beams: c.beams, blackout: c.blackout, result: c.result, week: c.week ?? week };
       const out = { pairs, meta };
-      Cache.set(`ceremony:${week}`, out);
+      Cache.set(cacheKey, out);
       return out;
     }
 
-    const root = await fetchJSON(`week_${week}.json`);
+    const root = await fetchJSON(`seasons/${season}/week_${week}.json`);
     if (root) {
       const c2 = root.ceremony || root;
       const pairs2 = normalizePairs(c2.pairs ?? c2.matches ?? c2.matchups ?? c2.couples ?? null);
       const meta2 = { beams: c2.beams ?? c2.result, blackout: c2.blackout, result: c2.result, week: c2.week ?? week };
       const out2 = { pairs: pairs2, meta: meta2 };
-      Cache.set(`ceremony:${week}`, out2);
+      Cache.set(cacheKey, out2);
       return out2;
     }
 
     const empty = { pairs: [], meta: {} };
-    Cache.set(`ceremony:${week}`, empty);
+    Cache.set(cacheKey, empty);
     return empty;
   }
 
-  async function discoverAndPrefetch(maxProbe = 60) {
-    const weeks = [];
-    for (let w = 0; w <= maxProbe; w++) {
-      const data = await fetchJSON(`data_week_${w}.json`);
-      if (!data) break;
-      Cache.set(`data:${w}`, data);
-      weeks.push(w);
-      // Opportunistically cache ceremony too
-      loadCeremonyForWeek(w, data).catch(() => {});
+  // Update to dynamically discover available seasons instead of hardcoding
+  async function discoverAvailableSeasons() {
+    const seasons = [];
+    
+    // Try both formats: "seasonN" and direct number folders
+    for (const format of ['season', '']) {
+      for (let i = 1; i <= 10; i++) {
+        const seasonName = `${format}${i}`;
+        const response = await fetch(`seasons/${seasonName}/`, { method: 'HEAD' });
+        if (response.ok) {
+          seasons.push(seasonName);
+        }
+      }
     }
+    
+    return seasons.length > 0 ? seasons : ['season1', 'season2', 'season3'];
+  }
+
+  async function discoverAndPrefetch(season, maxProbe = 60) {
+    const weeks = [];
+    
+    // Try week-specific files first
+    for (let w = 0; w <= maxProbe; w++) {
+      const data = await fetchJSON(`seasons/${season}/data_week_${w}.json`);
+      if (data) {
+        Cache.set(`data:${season}:${w}`, data);
+        weeks.push(w);
+        // Opportunistically cache ceremony too
+        loadCeremonyForWeek(season, w, data).catch(() => {});
+      }
+    }
+    
+    // If no week files found, look for a single data file
+    if (weeks.length === 0) {
+      // Try common fallback filenames
+      const fallbackNames = [
+        'data.json',
+        'data copy.json',
+        'all_data.json'
+      ];
+      
+      for (const filename of fallbackNames) {
+        const data = await fetchJSON(`seasons/${season}/${filename}`);
+        if (data) {
+          // Use this as week 0 data
+          Cache.set(`data:${season}:0`, data);
+          weeks.push(0);
+          break;
+        }
+      }
+    }
+    
     return weeks; // [0..max]
   }
 
-  function precomputePriorPairs(weeks) {
+  function precomputePriorPairs(season, weeks) {
     const priorPairsByWeek = new Map();
     const seen = new Set();
     for (const w of weeks) {
-      const weekly = Cache.get(`data:${w}`);
+      const weekly = Cache.get(`data:${season}:${w}`);
       const { pairs } = extractCeremonyFromWeeklyData(weekly);
-      const embedded = (pairs && pairs.length) ? pairs : (Cache.get(`ceremony:${w}`)?.pairs || []);
+      const embedded = (pairs && pairs.length) ? pairs : (Cache.get(`ceremony:${season}:${w}`)?.pairs || []);
       priorPairsByWeek.set(w, new Set(seen));
       for (const p of embedded) seen.add(keyPair(p.man, p.woman));
     }
@@ -170,6 +217,7 @@
     women: [],
     weekList: [],
     week: 0,
+    season: '',
     lastOrientation: 'men_by_women',
     cellSize: 45,
     svg: null,
@@ -363,6 +411,52 @@
     }
   }
 
+  function buildSeasonSelector(seasons) {
+    elSeasonNav.innerHTML = '';
+    for (const season of seasons) {
+      const btn = document.createElement('button');
+      btn.className = 'btn season-btn';
+      btn.textContent = season.replace(/([a-z])([0-9])/i, '$1 $2'); // Add space between text and number
+      btn.dataset.season = season;
+      btn.addEventListener('click', () => selectSeason(season), { passive: true });
+      elSeasonNav.appendChild(btn);
+    }
+  }
+
+  async function selectSeason(season) {
+    if (app.season === season) return;
+    
+    app.season = season;
+    
+    // Update UI - mark active season
+    for (const b of elSeasonNav.querySelectorAll('.btn')) {
+      b.classList.toggle('active', b.dataset.season === season);
+    }
+    
+    // Clear week buttons and other data
+    elWeekNav.innerHTML = '';
+    if (app.svg) {
+      d3.select('#heatmap').select('svg').remove();
+      d3.select('#legend').select('svg').remove();
+      d3.selectAll('.tooltip').remove();
+      app.svg = null;
+    }
+    
+    // Rediscover weeks for this season
+    const weeks = await discoverAndPrefetch(season, 60);
+    if (!weeks.length) {
+      elWeekNav.innerHTML = '<div class="no-data">No data available for this season</div>';
+      return;
+    }
+    
+    app.weekList = weeks;
+    app.priorPairsByWeek = precomputePriorPairs(season, weeks);
+    buildWeekButtons(weeks);
+    
+    // Select the last week by default
+    await selectWeek(weeks[weeks.length - 1]);
+  }
+
   function buildWeekButtons(weeks) {
     elWeekNav.innerHTML = '';
     for (const w of weeks) {
@@ -379,7 +473,7 @@
     app.week = w;
     for (const b of elWeekNav.querySelectorAll('.btn')) b.classList.toggle('active', Number(b.dataset.week) === w);
 
-    const data = Cache.get(`data:${w}`);
+    const data = Cache.get(`data:${app.season}:${w}`);
     if (!data) return;
 
     // Rebuild scene if names changed shape across weeks
@@ -393,7 +487,7 @@
     }
 
     // Ceremony
-    const { pairs, meta } = Cache.get(`ceremony:${w}`) || await loadCeremonyForWeek(w, data);
+    const { pairs, meta } = Cache.get(`ceremony:${app.season}:${w}`) || await loadCeremonyForWeek(app.season, w, data);
     const priorSet = app.priorPairsByWeek.get(w) || new Set();
 
     // Build set of certain (100%) pairs for this week
@@ -416,7 +510,7 @@
     if (!app.svg) return;
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
-      const data = Cache.get(`data:${app.week}`);
+      const data = Cache.get(`data:${app.season}:${app.week}`);
       if (!data) return;
       d3.select('#heatmap').select('svg').remove();
       d3.select('#legend').select('svg').remove();
@@ -431,15 +525,14 @@
     if (app.booted) return;
     app.booted = true;
 
-    const weeks = await discoverAndPrefetch(60);
-    if (!weeks.length) return;
-    app.weekList = weeks;
-
-    // Precompute prior-pair sets once
-    app.priorPairsByWeek = precomputePriorPairs(weeks);
-
-    buildWeekButtons(weeks);
-    await selectWeek(weeks[weeks.length - 1]); // default to latest
+    // Dynamically discover available seasons
+    const seasons = await discoverAvailableSeasons();
+    buildSeasonSelector(seasons);
+    
+    // Start with first season if available
+    if (seasons.length > 0) {
+      await selectSeason(seasons[0]);
+    }
   }
 
   if (!window.__HEATMAP_APP_BOOTED__) {
